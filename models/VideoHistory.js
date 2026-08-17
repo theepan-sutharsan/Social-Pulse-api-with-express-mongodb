@@ -1,0 +1,4 @@
+import { defineModel, iso, now } from "./_base.js";
+const VideoHistory = defineModel("VideoHistory", "video_history", { video_id: { type: Number, required: true, index: true }, external_id: String, views: { type: Number, default: 0 }, likes: { type: Number, default: 0 }, comments: { type: Number, default: 0 }, shares: { type: Number, default: 0 }, recorded_at: { type: Date, default: now }, created_at: { type: Date, default: now } });
+VideoHistory.prototype.toDict = function toDict() { return { id: this.id, video_id: this.video_id, external_id: this.external_id, views: this.views, likes: this.likes, comments: this.comments, shares: this.shares, date: this.recorded_at ? this.recorded_at.toISOString().slice(0, 10) : null, recorded_at: iso(this.recorded_at), created_at: iso(this.created_at) }; };
+export default VideoHistory;
