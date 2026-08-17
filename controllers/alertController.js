@@ -1,0 +1,3 @@
+import { Alert } from "../models/index.js";
+export async function getAlerts(req, res) { const alerts = await Alert.find({ user_id: req.user.id }).sort({ created_at: -1 }); return res.json({ alerts: alerts.map((a) => a.toDict()) }); }
+export async function markAlertRead(req, res) { const alert = await Alert.findOne({ id: Number(req.params.alert_id) }); if (!alert) return res.status(404).json({ error: "Alert not found." }); if (alert.user_id !== req.user.id) return res.status(403).json({ error: "Forbidden." }); alert.is_read = true; await alert.save(); return res.json({ message: "Alert marked as read.", alert: alert.toDict() }); }
