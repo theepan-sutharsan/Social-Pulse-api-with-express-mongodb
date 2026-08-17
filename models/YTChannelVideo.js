@@ -1,0 +1,5 @@
+import { defineModel, iso, now } from "./_base.js";
+const YTChannelVideo = defineModel("YTChannelVideo", "yt_channel_videos", { channel_fk_id: { type: Number, required: true, index: true }, video_id: { type: String, required: true }, title: String, description: String, tags_json: Object, published_at: Date, duration_seconds: { type: Number, default: 0 }, view_count: { type: Number, default: 0 }, like_count: { type: Number, default: 0 }, comment_count: { type: Number, default: 0 }, thumbnail_url: String, transcript_text: String, transcript_source: String, transcript_language: String, created_at: { type: Date, default: now } });
+YTChannelVideo.schema.index({ channel_fk_id: 1, video_id: 1 }, { unique: true });
+YTChannelVideo.prototype.toDict = function toDict() { return { id: this.id, video_id: this.video_id, title: this.title, published_at: iso(this.published_at), duration_seconds: this.duration_seconds || 0, view_count: this.view_count || 0, like_count: this.like_count || 0, comment_count: this.comment_count || 0, thumbnail_url: this.thumbnail_url, transcript_source: this.transcript_source }; };
+export default YTChannelVideo;
