@@ -1,0 +1,7 @@
+import crypto from "node:crypto";
+import { env } from "../config/env.js";
+
+export function validMetaAppId(value = env.metaAppId) { return Boolean(value) && !String(value).startsWith("your-") && !["123456789", "000000000"].includes(String(value)); }
+export function metaOAuthUrl(platform, state) { if (!validMetaAppId()) return `mock_${platform}_oauth`; const scopes = platform === "instagram" ? "instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement,business_management" : "public_profile,pages_show_list,pages_read_engagement,read_insights,pages_read_user_content"; return `https://www.facebook.com/v19.0/dialog/oauth?client_id=${encodeURIComponent(env.metaAppId)}&redirect_uri=${encodeURIComponent(env.metaRedirectUri)}&scope=${scopes}&state=${platform}:${encodeURIComponent(state)}&response_type=code`; }
+export function tiktokOAuthUrl(state) { if (!env.tiktokClientKey) return "mock_tiktok_oauth"; return `https://www.tiktok.com/v2/auth/authorize/?client_key=${encodeURIComponent(env.tiktokClientKey)}&scope=user.info.basic,video.list&response_type=code&redirect_uri=${encodeURIComponent(env.tiktokRedirectUri)}&state=tiktok:${encodeURIComponent(state)}`; }
+export function exchangeMock(platform) { const suffix = crypto.randomInt(100, 999); return { access_token: `stub_${platform}_access_token_${suffix}`, refresh_token: null, expires_in: 5184000, platform_account_id: `stub_${platform}_acc_${suffix}`, display_name: `Creator Account (${platform[0].toUpperCase()}${platform.slice(1)})` }; }
