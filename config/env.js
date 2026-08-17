@@ -7,7 +7,7 @@ export const env = {
   mongoUri: process.env.MONGODB_URI || process.env.MONGO_URI || "",
   jwtSecret: process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || "dev-secret-change-me",
   jwtExpiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES || `${process.env.JWT_ACCESS_TOKEN_EXPIRES_MINUTES || 1440}m`,
-  secretKey: process.env.SECRET_KEY || "dev-flask-secret",
+  secretKey: process.env.SECRET_KEY || "dev-secret-change-me",
   frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
   passwordResetMaxAge: Number(process.env.PASSWORD_RESET_TOKEN_MAX_AGE || 3600),
   corsOrigins: process.env.CORS_ORIGINS || "*",
@@ -25,7 +25,7 @@ export const env = {
   whisperModel: process.env.WHISPER_MODEL || "small",
   audienceMaxComments: Number(process.env.AUDIENCE_MAX_COMMENTS || 10000),
   audienceCommentBatchSize: Number(process.env.AUDIENCE_COMMENT_BATCH_SIZE || 150),
-  debug: process.env.FLASK_DEBUG === "1" || process.env.NODE_ENV === "development"
+  debug: process.env.DEBUG === "1" || process.env.NODE_ENV === "development"
 };
 
 export function corsOrigin() {
