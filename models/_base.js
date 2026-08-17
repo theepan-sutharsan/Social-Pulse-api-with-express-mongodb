@@ -9,7 +9,7 @@ export function defineModel(name, collection, fields, options = {}) {
     ...fields
   }, { versionKey: false, ...options });
 
-  schema.pre("validate", async function assignNumericId(next) {
+  schema.pre("validate", async function assignNumericId() {
     if (this.isNew && !this.id) {
       const counter = await Counter.findOneAndUpdate(
         { key: collection },
@@ -18,7 +18,18 @@ export function defineModel(name, collection, fields, options = {}) {
       );
       this.id = counter.seq;
     }
-    next();
+  });
+
+  schema.pre("findOneAndUpdate", async function assignNumericIdToUpsert() {
+    if (!this.getOptions().upsert) return;
+    const update = this.getUpdate() || {}, setOnInsert = update.$setOnInsert || {};
+    if (setOnInsert.id || update.id || update.$set?.id) return;
+    const counter = await Counter.findOneAndUpdate(
+      { key: collection },
+      { $inc: { seq: 1 } },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    this.setUpdate({ ...update, $setOnInsert: { ...setOnInsert, id: counter.seq } });
   });
 
   schema.set("toJSON", { transform: (_doc, ret) => { delete ret._id; return ret; } });

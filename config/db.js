@@ -1,3 +1,4 @@
+import dns from "node:dns";
 import mongoose from "mongoose";
 import { env } from "./env.js";
 
@@ -23,6 +24,15 @@ function attachConnectionListeners() {
   });
 }
 
+function isSrvDnsFailure(error) {
+  return env.mongoUri.startsWith("mongodb+srv://") && /querySrv|queryTxt|ECONNREFUSED|ETIMEOUT/i.test(error?.message || "");
+}
+
+function usePublicDnsFallback() {
+  dns.setServers(["1.1.1.1", "8.8.8.8"]);
+  console.warn("Atlas SRV lookup failed with the system DNS resolver; retrying with public DNS.");
+}
+
 export async function connectDB() {
   attachConnectionListeners();
   if (!env.mongoUri) {
@@ -31,8 +41,15 @@ export async function connectDB() {
     return null;
   }
   connectionState = "connecting";
+  const options = { serverSelectionTimeoutMS: 10000 };
   try {
-    await mongoose.connect(env.mongoUri);
+    try {
+      await mongoose.connect(env.mongoUri, options);
+    } catch (error) {
+      if (!isSrvDnsFailure(error)) throw error;
+      usePublicDnsFallback();
+      await mongoose.connect(env.mongoUri, options);
+    }
     connectionState = "connected";
     console.log("Connected to MongoDB.");
     return mongoose.connection;
