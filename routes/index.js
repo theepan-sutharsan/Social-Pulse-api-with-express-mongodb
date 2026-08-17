@@ -1,0 +1,12 @@
+export { default as authRoutes } from "./authRoutes.js";
+export { default as accountRoutes } from "./accountRoutes.js";
+export { default as adminUserRoutes } from "./adminUserRoutes.js";
+export { default as alertRoutes } from "./alertRoutes.js";
+export { default as analyticsRoutes } from "./analyticsRoutes.js";
+export { default as dashboardRoutes } from "./dashboardRoutes.js";
+export { default as trackedChannelRoutes } from "./trackedChannelRoutes.js";
+export { default as suggestionRoutes } from "./suggestionRoutes.js";
+export { default as videoRoutes } from "./videoRoutes.js";
+export { default as videoAnalyticsRoutes } from "./videoAnalyticsRoutes.js";
+export { default as videoAnalysisRoutes } from "./videoAnalysisRoutes.js";
+export { default as channelAnalyticsRoutes } from "./channelAnalyticsRoutes.js";
