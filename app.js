@@ -25,6 +25,17 @@ app.disable("x-powered-by");
 app.use((req, res, next) => { const origin = req.get("origin"), allowed = corsOrigin(); if (allowed === true || (Array.isArray(allowed) && allowed.includes(origin))) res.set("Access-Control-Allow-Origin", allowed === true ? "*" : origin); res.set("Access-Control-Allow-Credentials", "true"); res.set("Access-Control-Allow-Headers", "Content-Type, Authorization"); res.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS"); if (req.method === "OPTIONS") return res.sendStatus(204); next(); });
 app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true, limit: "25mb" }));
+
+// Vercel runs the exported Express app as a serverless function, so there is
+// no startup hook where startServer() can establish the database connection.
+// Connect lazily before handling the first request in that environment.
+if (process.env.VERCEL) {
+  app.use(async (_req, _res, next) => {
+    await connectDB();
+    next();
+  });
+}
+
 app.use("/api", healthRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/accounts", accountRoutes);
@@ -47,5 +58,6 @@ app.use(notFound);
 app.use(errorHandler);
 
 export { app };
+export default app;
 export async function startServer() { await connectDB(); return app.listen(env.port, "0.0.0.0", () => console.log(`Server is running on http://localhost:${env.port}`)); }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) startServer().catch((error) => { console.error(error); process.exitCode = 1; });

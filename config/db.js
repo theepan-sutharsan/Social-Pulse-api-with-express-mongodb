@@ -4,6 +4,7 @@ import { env } from "./env.js";
 
 let connectionState = "disconnected";
 let listenersAttached = false;
+let connectionPromise = null;
 
 function attachConnectionListeners() {
   if (listenersAttached) return;
@@ -40,23 +41,38 @@ export async function connectDB() {
     console.warn("MONGODB_URI is not configured; the API is running in degraded mode.");
     return null;
   }
+  if (mongoose.connection.readyState === 1) {
+    connectionState = "connected";
+    return mongoose.connection;
+  }
+  if (connectionPromise) return connectionPromise;
+
   connectionState = "connecting";
   const options = { serverSelectionTimeoutMS: 10000 };
-  try {
+
+  connectionPromise = (async () => {
     try {
-      await mongoose.connect(env.mongoUri, options);
+      try {
+        await mongoose.connect(env.mongoUri, options);
+      } catch (error) {
+        if (!isSrvDnsFailure(error)) throw error;
+        usePublicDnsFallback();
+        await mongoose.connect(env.mongoUri, options);
+      }
+      connectionState = "connected";
+      console.log("Connected to MongoDB.");
+      return mongoose.connection;
     } catch (error) {
-      if (!isSrvDnsFailure(error)) throw error;
-      usePublicDnsFallback();
-      await mongoose.connect(env.mongoUri, options);
+      connectionState = "error";
+      console.error(`Database connection error: ${error.message}`);
+      return null;
     }
-    connectionState = "connected";
-    console.log("Connected to MongoDB.");
-    return mongoose.connection;
-  } catch (error) {
-    connectionState = "error";
-    console.error(`Database connection error: ${error.message}`);
-    return null;
+  })();
+
+  try {
+    return await connectionPromise;
+  } finally {
+    connectionPromise = null;
   }
 }
 
